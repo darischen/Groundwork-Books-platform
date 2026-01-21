@@ -1,5 +1,10 @@
 // app/api/square/inventory/batch/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+
+const SQUARE_BASE_URL = process.env.SQUARE_ENVIRONMENT === 'production'
+  ? 'https://connect.squareup.com'
+  : 'https://connect.squareupsandbox.com';
+
 type BatchRetrieveCountsRequest = {
   catalog_object_ids: string[];
   location_ids?: string[];
@@ -66,7 +71,7 @@ export async function POST(req: NextRequest) {
         let attempt = 0;
         while (true) {
           r = await fetch(
-            'https://connect.squareup.com/v2/inventory/batch-retrieve-counts',
+            `${SQUARE_BASE_URL}/v2/inventory/batch-retrieve-counts`,
             { method: 'POST', headers: headers(), body: JSON.stringify(payload) }
           );
           if (r.status !== 429 || attempt >= 2) break;

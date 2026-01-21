@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SquareFulfillment } from '@/lib/square-types';
 
+const SQUARE_BASE_URL = process.env.SQUARE_ENVIRONMENT === 'production'
+  ? 'https://connect.squareup.com'
+  : 'https://connect.squareupsandbox.com';
+
 // Helper function for Square API headers
 const getSquareHeaders = (includeContentType = true) => {
   const headers: Record<string, string> = {
@@ -25,7 +29,7 @@ export async function GET(
     const { orderId } = await params;
     
     // Retrieve order using direct Square Orders API
-    const orderResponse = await fetch(`https://connect.squareup.com/v2/orders/${orderId}`, {
+    const orderResponse = await fetch(`${SQUARE_BASE_URL}/v2/orders/${orderId}`, {
       method: 'GET',
       headers: getSquareHeaders(false)
     });
@@ -64,7 +68,7 @@ export async function PUT(
     const { fulfillmentId, state } = body; // state: 'PREPARED' or 'COMPLETED'
     
     // First get the current order to get the version
-    const orderResponse = await fetch(`https://connect.squareup.com/v2/orders/${orderId}`, {
+    const orderResponse = await fetch(`${SQUARE_BASE_URL}/v2/orders/${orderId}`, {
       method: 'GET',
       headers: getSquareHeaders(false)
     });
@@ -88,7 +92,7 @@ export async function PUT(
       return fulfillment;
     });
 
-    const updateResponse = await fetch(`https://connect.squareup.com/v2/orders/${orderId}`, {
+    const updateResponse = await fetch(`${SQUARE_BASE_URL}/v2/orders/${orderId}`, {
       method: 'PUT',
       headers: getSquareHeaders(),
       body: JSON.stringify({

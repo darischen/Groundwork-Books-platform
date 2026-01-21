@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SquareOrder } from '../../../../../lib/square-types';
 
+const SQUARE_BASE_URL = process.env.SQUARE_ENVIRONMENT === 'production'
+  ? 'https://connect.squareup.com'
+  : 'https://connect.squareupsandbox.com';
+
 // Helper function for Square API headers
 const getSquareHeaders = (includeContentType = true) => {
   const headers: Record<string, string> = {
@@ -24,7 +28,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status'); // status: 'PREPARED', 'COMPLETED', etc.
     const showUnpaid = searchParams.get('show_unpaid') === 'true';
     
-    const searchResponse = await fetch('https://connect.squareup.com/v2/orders/search', {
+    const searchResponse = await fetch(`${SQUARE_BASE_URL}/v2/orders/search`, {
       method: 'POST',
       headers: getSquareHeaders(),
       body: JSON.stringify({
@@ -52,6 +56,13 @@ export async function GET(request: NextRequest) {
           return isPaid || isCompleted;
         });
       }
+
+      orders = orders.filter((order: SquareOrder) => {
+      const isWebsiteOrder =
+        order.source?.name === 'website' ||
+        order.metadata?.source === 'website';
+      return isWebsiteOrder;
+    });
       
       // Filter by fulfillment status if specified
       if (status) {

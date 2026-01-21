@@ -54,6 +54,9 @@ export interface SquareOrder {
   line_items: SquareLineItem[];
   fulfillments: SquareFulfillment[];
   tenders?: SquareTender[];
+  source?: {
+    name?: string;
+  },
   metadata?: Record<string, string>;
 }
 
