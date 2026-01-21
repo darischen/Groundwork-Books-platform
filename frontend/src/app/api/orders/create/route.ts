@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CartItem } from '../../../../lib/square-types';
 
+const SQUARE_BASE_URL = process.env.SQUARE_ENVIRONMENT === 'production'
+  ? 'https://connect.squareup.com'
+  : 'https://connect.squareupsandbox.com';
+
 // Helper function for Square API headers
 const getSquareHeaders = (includeContentType = true) => {
   const headers: Record<string, string> = {
@@ -31,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use direct fetch API since SDK has auth issues
-    const response = await fetch('https://connect.squareup.com/v2/orders', {
+    const response = await fetch(`${SQUARE_BASE_URL}/v2/orders`, {
       method: 'POST',
       headers: getSquareHeaders(),
       body: JSON.stringify({

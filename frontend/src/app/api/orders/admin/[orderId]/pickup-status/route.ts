@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const SQUARE_BASE_URL = process.env.SQUARE_ENVIRONMENT === 'production'
+  ? 'https://connect.squareup.com'
+  : 'https://connect.squareupsandbox.com';
+
 // Helper function for Square API headers
 const getSquareHeaders = (includeContentType = true) => {
   const headers: Record<string, string> = {
@@ -68,7 +72,7 @@ export async function PUT(
 
     // First get the current order
     const orderResponse = await fetch(
-      `https://connect.squareup.com/v2/orders/${orderId}`,
+      `${SQUARE_BASE_URL}/v2/orders/${orderId}`,
       {
         method: 'GET',
         headers: getSquareHeaders(false)
@@ -116,7 +120,7 @@ export async function PUT(
 
     // Update the fulfillment status
     const updateResponse = await fetch(
-      `https://connect.squareup.com/v2/orders/${orderId}`,
+      `${SQUARE_BASE_URL}/v2/orders/${orderId}`,
       {
         method: 'PUT',
         headers: getSquareHeaders(),

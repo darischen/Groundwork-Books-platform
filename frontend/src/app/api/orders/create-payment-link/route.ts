@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CartItem } from '../../../../lib/square-types';
 
+const SQUARE_BASE_URL = process.env.SQUARE_ENVIRONMENT === 'production'
+  ? 'https://connect.squareup.com'
+  : 'https://connect.squareupsandbox.com';
+
 // Helper function for Square API headers
 const getSquareHeaders = (includeContentType = true) => {
   const headers: Record<string, string> = {
@@ -30,7 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     // First create the order (for tracking purposes)
-    const orderResponse = await fetch('https://connect.squareup.com/v2/orders', {
+    const orderResponse = await fetch(`${SQUARE_BASE_URL}/v2/orders`, {
       method: 'POST',
       headers: getSquareHeaders(),
       body: JSON.stringify({
@@ -70,6 +74,7 @@ export async function POST(req: NextRequest) {
     const orderData = await orderResponse.json();
     
     if (!orderResponse.ok || !orderData.order) {
+      console.error('Order creation failed:', JSON.stringify(orderData, null, 2));
       return NextResponse.json({
         error: 'Failed to create order',
         details: orderData.errors || orderData || 'Unknown error'
@@ -79,7 +84,7 @@ export async function POST(req: NextRequest) {
     const orderId = orderData.order.id;
 
     // Now create Payment Link for this order
-    const paymentLinkResponse = await fetch('https://connect.squareup.com/v2/online-checkout/payment-links', {
+    const paymentLinkResponse = await fetch(`${SQUARE_BASE_URL}/v2/online-checkout/payment-links`, {
       method: 'POST',
       headers: getSquareHeaders(),
       body: JSON.stringify({
@@ -136,6 +141,7 @@ export async function POST(req: NextRequest) {
         payment_link_id: paymentLinkData.payment_link.id
       });
     } else {
+      console.error('Payment Link creation failed:', JSON.stringify(paymentLinkData, null, 2));
       return NextResponse.json({
         error: 'Failed to create Payment Link',
         details: paymentLinkData.errors || paymentLinkData || 'Unknown error'
